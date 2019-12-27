@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cjamal <cjamal@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/29 14:32:29 by aait-ihi          #+#    #+#             */
-/*   Updated: 2019/12/17 17:56:30 by cjamal           ###   ########.fr       */
+/*   Updated: 2019/12/27 17:25:16 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ typedef struct	s_env_var
 }				t_env_var;
 
 t_list			*ft_parsecmd(char *buffer, t_list **env, t_env_var *var);
+char			*ft_parse_arg(char *arg, char **buff);
 
 char			*ft_shellmain(char **cmd, t_env_var *var);
 
