@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_arg.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2019/12/27 19:49:22 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/02 00:25:43 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,10 @@ char *parse_redirections(char *arg, char **buff, int *i)
 	int j;
 	char c;
 
-	j = *i;
-	if (!arg || !buff || !*buff)
+	if(!arg || !buff || !*buff)
 		return (NULL);
+	(*i == 0) ? buff[(*i)++] = *arg == '>' : 0;
+	j = *i;
 	c = *arg;
 	while (*arg == c)
 		buff[0][(*i)++] = *arg++;
@@ -62,12 +63,11 @@ char *parse_redirections(char *arg, char **buff, int *i)
 		ft_printf("parse error near `%.*s'\n", 1 << ((*i - j) > 3), arg - 2);
 		return (NULL);
 	}
+	(*arg == '&') ? buff[(*i)++] = '&' : 0;
 	arg = ft_skip_chars(arg, " \t");
-	while (!*arg)
-	{
-		//ft_strdel(&arg);
-		arg = sequel(buff, i);
-	}
+	if(!*arg || ft_isinstr(*arg, "&|;"))
+		return(ft_printf("syntax error near unexpected token `%s'", "newline") * 0);
+
 	return (arg);
 }
 
@@ -132,8 +132,8 @@ char *ft_parse_arg(char *arg, char **buff)
 			buff[0][index] = 0;
 			return (arg);
 		}
-		// else if (*arg == '<' || *arg == '>')
-		// 	arg = parse_redirections(arg, buff, &index);
+		else if ((*arg == '<' || *arg == '>') && BETWEEN(index, 0, 1))
+			arg = parse_redirections(arg, buff, &index);
 		else
 			break;
 	}
