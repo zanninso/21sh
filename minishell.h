@@ -6,7 +6,7 @@
 /*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/29 14:32:29 by aait-ihi          #+#    #+#             */
-/*   Updated: 2019/12/27 17:25:16 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/19 03:37:25 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@
 # define CONTAIN_ALPHANUM "Variable name must contain just alphanum chars."
 # define CMD_NOT_FOUND "command not found"
 # define UNMATCHED "unmatched"
+
+# include "readline/readline.h"
+char	*ft_readline(const char *prompt);
 
 pid_t			g_child_prc_pid;
 t_list			**g_pwd;

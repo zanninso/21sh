@@ -6,7 +6,7 @@
 /*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/21 06:55:35 by aait-ihi          #+#    #+#             */
-/*   Updated: 2019/12/27 17:25:31 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/19 00:02:55 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ char	*ft_parse_dollar(char *arg, t_list **env)
 	while (arg && (dolr = ft_strchr(dolr, '$')) && dolr[1])
 	{
 		*dolr++ = 0;
-		len_var = ft_skip_unitl_char(dolr, SYMBOL) - dolr;
+		len_var = ft_skip_unitl_char(dolr, NULL, ft_isnalnum) - dolr;
 		tmp = "";
 		if (*dolr == '$' && (dolr++ || 1))
 			tmp = PID;
@@ -69,7 +69,7 @@ t_list	*ft_parsecmd(char *buffer, t_list **env, t_env_var *var)
 	if (!(buff = malloc(ft_strlen(buffer) + 1)))
 		return (NULL);
 	args = NULL;
-	buffer = ft_skip_chars(buffer, "\t ");
+	buffer = ft_skip_chars(buffer, "\t ", NULL);
 	while (*buffer)
 	{
 		if (!(buffer = ft_parse_arg(buffer, &buff)))
@@ -78,7 +78,7 @@ t_list	*ft_parsecmd(char *buffer, t_list **env, t_env_var *var)
 			ft_lstdel(&args);
 			return (NULL);
 		}
-		buffer = ft_skip_chars(buffer, "\t ");
+		buffer = ft_skip_chars(buffer, "\t ", NULL);
 		tmp = ft_parse_dollar(ft_strdup(buff), env);
 		tmp = ft_parse_tilde(tmp, var);
 		ft_translate(tmp, "\1\2", "$~");

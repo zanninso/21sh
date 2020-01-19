@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cjamal <cjamal@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/23 00:14:15 by aait-ihi          #+#    #+#             */
-/*   Updated: 2019/12/17 17:58:00 by cjamal           ###   ########.fr       */
+/*   Updated: 2020/01/19 03:12:35 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,8 +114,8 @@ int		main(int ac, char *av[], char *environ[])
 	init(environ, &env, &var);
 	while (1)
 	{
-		ft_display_prompt(var.pwd->content, var.error);
-		if (get_next_line(0, &buffer) > 0)
+		//ft_display_prompt(var.pwd->content, var.error);
+		if ((buffer = ft_readline("$>")))
 		{
 			lstcmd = ft_parsecmd(buffer, &env, &var);
 			cmd = list_to_tab(lstcmd, 0);

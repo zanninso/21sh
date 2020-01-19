@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_arg.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/02 00:25:43 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/19 03:13:50 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,16 @@ char *sequel(char **buff, int *buff_len)
 {
 	char *line;
 
-	line = NULL;
-	ft_printf(">");
-	if (get_next_line(0, &line) < 0)
+	if ((line = ft_readline(">")))
 	{
-		free(line);
-		return (NULL);
+		if (!(*buff = ft_realloc(*buff, *buff_len + 1, ft_strlen(line) + 1)))
+		{
+			free(line);
+			return (NULL);
+		}
+		ft_strcat(*buff, "\n");
+		(*buff_len)++;
 	}
-	if (!(*buff = ft_realloc(*buff, *buff_len + 1, ft_strlen(line) + 1)))
-	{
-		free(line);
-		return (NULL);
-	}
-	ft_strcat(*buff, "\n");
-	(*buff_len)++;
 	return (line);
 }
 
@@ -51,9 +47,9 @@ char *parse_redirections(char *arg, char **buff, int *i)
 	int j;
 	char c;
 
-	if(!arg || !buff || !*buff)
+	if (!arg || !buff || !*buff)
 		return (NULL);
-	(*i == 0) ? buff[(*i)++] = *arg == '>' : 0;
+	(*i == 0) ? (buff[0][(*i)++] = *arg) : 0;
 	j = *i;
 	c = *arg;
 	while (*arg == c)
@@ -63,11 +59,13 @@ char *parse_redirections(char *arg, char **buff, int *i)
 		ft_printf("parse error near `%.*s'\n", 1 << ((*i - j) > 3), arg - 2);
 		return (NULL);
 	}
-	(*arg == '&') ? buff[(*i)++] = '&' : 0;
-	arg = ft_skip_chars(arg, " \t");
-	if(!*arg || ft_isinstr(*arg, "&|;"))
-		return(ft_printf("syntax error near unexpected token `%s'", "newline") * 0);
-
+	(*arg == '&') ? buff[0][(*i)++] = '&' : 0;
+	arg = ft_skip_chars(arg, " \t", NULL);
+	if (!*arg || ft_isinstr(*arg, "&|;"))
+	{
+		ft_printf("parse error near `%.*s'\n", *arg == '\n' ? (char[]){'\\', 'n', 0} : (char[]){*arg, 0});
+		return (NULL);
+	}
 	return (arg);
 }
 
@@ -86,7 +84,7 @@ char *parse_pipe(char *arg, char **buff, int *i)
 		ft_printf("parse error near `%.*s'\n", 1 << ((*i - j) > 3), arg - 2);
 		return (NULL);
 	}
-	arg = ft_skip_chars(arg, " \t");
+	arg = ft_skip_chars(arg, " \t", NULL);
 	while (!*arg)
 	{
 		//ft_strdel(&arg);
