@@ -3,14 +3,31 @@
 /*                                                        :::      ::::::::   */
 /*   parse_arg.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/19 03:13:50 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/21 18:25:35 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void merge_cmd(t_cmd_holder *hold, char *str)
+{
+	char *tmp;
+	int len;
+
+	tmp = hold->buff;
+	len = ft_strlen(hold->buff);
+	if ((hold->buff = ft_strnjoin((char *[]){hold->buff, "\n", str}, 3)))
+		hold->cmd = hold->buff + len + 1;
+	else if (str)
+	{
+		free(str);
+		hold->cmd = NULL;
+	}
+	free(tmp);
+}
 
 char *sequel(char **buff, int *buff_len)
 {
@@ -42,98 +59,102 @@ char *copy_to_buff(char *arg, char *buff, int *i, const char *cmp)
 	return (arg);
 }
 
-char *parse_redirections(char *arg, char **buff, int *i)
+char *parse_redirections(t_cmd_holder *hold, char **buff, int *i)
 {
 	int j;
 	char c;
 
-	if (!arg || !buff || !*buff)
+	if (!hold->cmd || !buff || !*buff)
 		return (NULL);
-	(*i == 0) ? (buff[0][(*i)++] = *arg) : 0;
+	// (*i == 0) ? (buff[0][(*i)++] = *hold->cmd) : 0;
 	j = *i;
-	c = *arg;
-	while (*arg == c)
-		buff[0][(*i)++] = *arg++;
+	c = *hold->cmd;
+	while (*hold->cmd == c)
+		buff[0][(*i)++] = *hold->cmd++;
 	if (*i - j > 2)
 	{
-		ft_printf("parse error near `%.*s'\n", 1 << ((*i - j) > 3), arg - 2);
+		ft_printf("parse error near `%c'\n", c);
 		return (NULL);
 	}
-	(*arg == '&') ? buff[0][(*i)++] = '&' : 0;
-	arg = ft_skip_chars(arg, " \t", NULL);
-	if (!*arg || ft_isinstr(*arg, "&|;"))
-	{
-		ft_printf("parse error near `%.*s'\n", *arg == '\n' ? (char[]){'\\', 'n', 0} : (char[]){*arg, 0});
-		return (NULL);
-	}
-	return (arg);
-}
-
-char *parse_pipe(char *arg, char **buff, int *i)
-{
-	int j;
-
-	j = *i;
-	if (!arg || !buff || !*buff)
-		return (NULL);
-	while (*arg == '|')
-		buff[0][(*i)++] = *arg++;
+	(*i - j == 1 && *hold->cmd == '&') ? buff[0][(*i)++] = '&' : 0;
 	buff[0][(*i)] = 0;
-	if (*i - j > 2)
+	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
+	if (!*hold->cmd || ft_isinstr(*hold->cmd, SEPARATOR))
 	{
-		ft_printf("parse error near `%.*s'\n", 1 << ((*i - j) > 3), arg - 2);
+		ft_printf("parse error near `%2s'\n", *hold->cmd ? hold->cmd : "\n");
 		return (NULL);
 	}
-	arg = ft_skip_chars(arg, " \t", NULL);
-	while (!*arg)
-	{
-		//ft_strdel(&arg);
-		arg = sequel(buff, i);
-	}
-	return (arg);
+	return (hold->cmd);
 }
 
-char *parse_quotes(char *arg, char **buff, int *i)
+char *parse_pipe(t_cmd_holder *hold, char **buff, int *i)
+{
+	int j;
+	int c;
+
+	j = *i;
+	c = *hold->cmd;
+	if (!hold->cmd || !buff || !*buff)
+		return (NULL);
+	while (*hold->cmd == c)
+		buff[0][(*i)++] = *hold->cmd++;
+	buff[0][(*i)] = 0;
+	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
+	if (*i - j > 2 || ft_isinstr(hold->cmd, SEPARATOR))
+	{
+		ft_printf("parse error near `%c'\n", *hold->cmd);
+		return (NULL);
+	}
+	while (!*hold->cmd)
+		merge_cmd(hold, sequel(buff, i));
+	return (hold->cmd);
+}
+
+char *parse_quotes(t_cmd_holder *hold, char **buff, int *i)
 {
 	char c;
+	const int j = *i;
 
-	if (!arg || !buff || !*buff)
+	if (!hold->cmd || !buff || !*buff)
 		return (NULL);
-	c = *arg++;
+	c = *hold->cmd++;
 	while (1)
 	{
-		arg = copy_to_buff(arg, *buff, i, (char[2]){c, 0});
-		if (*arg == c)
+		hold->cmd = copy_to_buff(hold->cmd, *buff, i, (char[2]){c, 0});
+		if (*hold->cmd == c)
 			break;
-		//ft_strdel(&arg);
-		arg = sequel(buff, i);
+		merge_cmd(hold, sequel(buff, i));
 	}
-	return (arg + 1);
+	if (c == '\'')
+		ft_translate(*buff + j, "$~&;<>|", "\1\2\5\6\7\x08\x09");
+	else
+		ft_translate(*buff + j, "~&;<>|", "\2\5\6\7\x08\x09");
+	return (hold->cmd + 1);
 }
 
-char *ft_parse_arg(char *arg, char **buff)
+char *ft_parse_arg(t_cmd_holder *hold, char **buff)
 {
 	int index;
 
 	index = 0;
-	while (arg && *arg)
+	while (hold->cmd && *hold->cmd)
 	{
-		arg = copy_to_buff(arg, *buff, &index, ";|&><' \t\"");
-		if (*arg == '"' || *arg == '\'')
-			arg = parse_quotes(arg, buff, &index);
-		else if ((*arg == '|' || *arg == '&') && index == 0)
-			return (parse_pipe(arg, buff, &index));
-		else if (*arg == ';' && index == 0)
+		hold->cmd = copy_to_buff(hold->cmd, *buff, &index, ";|&><' \t\"");
+		if (*hold->cmd == '"' || *hold->cmd == '\'')
+			hold->cmd = parse_quotes(hold, buff, &index);
+		else if ((*hold->cmd == '|' || *hold->cmd == '&') && index == 0)
+			return (parse_pipe(hold, buff, &index));
+		else if (*hold->cmd == ';' && index == 0)
 		{
-			while (*arg == ';')
-				buff[0][index++] = *arg++;
+			while (*hold->cmd == ';')
+				buff[0][index++] = *hold->cmd++;
 			buff[0][index] = 0;
-			return (arg);
+			return (hold->cmd);
 		}
-		else if ((*arg == '<' || *arg == '>') && BETWEEN(index, 0, 1))
-			arg = parse_redirections(arg, buff, &index);
+		else if ((*hold->cmd == '<' || *hold->cmd == '>') && BETWEEN(index, 0, 1))
+			return (parse_redirections(hold, buff, &index));
 		else
 			break;
 	}
-	return (arg);
+	return (hold->cmd);
 }

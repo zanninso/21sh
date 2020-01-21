@@ -1,14 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   env.c                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: cjamal <cjamal@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/11/25 23:31:31 by aait-ihi          #+#    #+#             */
-/*   Updated: 2019/12/17 18:06:44 by cjamal           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "minishell.h"
 
@@ -88,8 +77,6 @@ int		ft_setenv(char **cmd, t_list **env, t_env_var *var)
 	return (0);
 }
 
-// modified
-
 int		ft_env(t_list **env, char **cmd, t_env_var *var)
 {
 	t_list	*dup;
@@ -106,7 +93,7 @@ int		ft_env(t_list **env, char **cmd, t_env_var *var)
 			create_modify_env(&dup, cmd[i], val + 1, NULL);
 		else
 		{
-			ft_shellmain(cmd + i, var);
+			i = ft_exec_bin(cmd + i, var, dup, 1);
 			ft_lstdel(&dup);
 			return (i);
 		}

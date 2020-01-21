@@ -1,25 +1,22 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/11/23 00:14:15 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/19 03:12:35 by aait-ihi         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "minishell.h"
+#include <readline/readline.h>
+
+int		ft_tabsize(char **tab)
+{
+	int size;
+
+	size = 0;
+	while (tab[size])
+		size++;
+	return (size);
+}
 
 void	kill_procces(int signal)
 {
 	(void)signal;
-	if (g_child_prc_pid == 0)
-	{
-		ft_putstr("\n");
-		ft_display_prompt((*g_pwd)->content, *g_prompt_error);
-	}
+	ft_putstr_fd("\n",0);
+	g_read_interrput = 1;
 }
 
 void	env_var_protection(t_env_var *var, t_list **env)
@@ -59,73 +56,37 @@ void	init(char *environ[], t_list **env, t_env_var *var)
 	env_var_protection(var, env);
 }
 
-int		dispatch(char **cmd, t_list **env, t_env_var *var, char **cmdpath)
-{
-	if (!cmd[0])
-		return (-1);
-	else if (ft_strequ(cmd[0], "exit"))
-	{
-		ft_free_2d_tab(cmd);
-		ft_lstdel(env);
-		exit(0);
-	}
-	if (ft_strequ(cmd[0], "cd"))
-		return (ft_cd(cmd, var, NULL));
-	if (ft_strequ(cmd[0], "echo"))
-		return (ft_echo(cmd));
-	if (ft_strequ(cmd[0], "env"))
-		return (ft_env(env, cmd, var));
-	if (ft_strequ(cmd[0], "setenv"))
-		return (ft_setenv(cmd, env, var));
-	if (ft_strequ(cmd[0], "unsetenv"))
-		return (ft_unsetenv(cmd, env));
-	if ((*cmdpath = ft_shellmain(cmd, var)))
-		return (0);
-	return (1);
-}
-
-void ft_mainexec(char ***tabsep, t_list *env, t_env_var *var)
-{
-	int	i;
-	int pipecount;
-	char ***tabpipe;
-
-	i = 0;
-	while (tabsep[i])
-	{
-		pipecount = ft_ltrcount(tabsep[i], "|");
-		tabpipe = parsesep(tabsep[i], pipecount, "|");
-		ft_execpipe(tabpipe, pipecount, env, var);
-		i++;
-	}
-}
-
 int		main(int ac, char *av[], char *environ[])
 {
-	char		*buffer;
-	char		**cmd;
-	t_list		*env;
-	t_list		*lstcmd;
-	char		***tabsep;
-	t_env_var	var;
+	t_list			*lstcmd;
+	t_env_var		var;
+	t_cmd_holder	*hold;
 
 	(void)av[ac * 0];
-	buffer = NULL;
-	init(environ, &env, &var);
+	hold = (t_cmd_holder *)ft_memalloc(sizeof(t_cmd_holder));
+	ft_bzero(prompt, 260);
+	init(environ, &hold->env, &var);
 	while (1)
 	{
-		//ft_display_prompt(var.pwd->content, var.error);
-		if ((buffer = ft_readline("$>")))
+		g_read_interrput = 0;
+		ft_display_prompt(var.pwd->content, var.error);
+		if ((hold->buff = ft_readline(prompt)))
 		{
-			lstcmd = ft_parsecmd(buffer, &env, &var);
-			cmd = list_to_tab(lstcmd, 0);
-			ft_strdel(&buffer);
+			lstcmd = ft_parsecmd(hold, &hold->env, &var);
+			hold->tab_redir = ft_alloc_tabredirs(&lstcmd);
+			hold->tabcmd = list_to_tab(lstcmd, 0);
+			hold->size_cmd = ft_tabsize(hold->tabcmd);
+			ft_strdel(&hold->buff);
 			ft_lstdel(&lstcmd);
-			tabsep = parsesep(cmd, ft_ltrcount(cmd, ";"), ";");
-			ft_mainexec(tabsep, env, &var);
-			ft_free_2d_tab(cmd);
+			var.error = ft_mainexec(hold, &var);
+			ft_free(hold);
 		}
-		ft_strdel(&buffer);
+		// else if (*hold->buff == '\4')
+		// {
+		// 	ft_strdel(&hold->buff);
+		// 	exit(0);
+		// }
+		ft_strdel(&hold->buff);
 		g_child_prc_pid = 0;
 	}
 	return (0);

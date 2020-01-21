@@ -3,22 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aait-ihi <aait-ihi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/21 06:55:35 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/19 00:02:55 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/21 14:52:45 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*ft_parse_dollar(char *arg, t_list **env)
+char *ft_parse_dollar(char *arg, t_list **env)
 {
-	char	*dolr;
-	char	*tmp;
-	char	*to_free;
-	t_list	**var_env;
-	int		len_var;
+	char *dolr;
+	char *tmp;
+	char *to_free;
+	t_list **var_env;
+	int len_var;
 
 	dolr = arg;
 	while (arg && (dolr = ft_strchr(dolr, '$')) && dolr[1])
@@ -38,9 +38,9 @@ char	*ft_parse_dollar(char *arg, t_list **env)
 	return (arg);
 }
 
-char	*ft_parse_tilde(char *tilde, t_env_var *var)
+char *ft_parse_tilde(char *tilde, t_env_var *var)
 {
-	char	*ret;
+	char *ret;
 
 	if (tilde && tilde[0] == '~')
 	{
@@ -60,31 +60,45 @@ char	*ft_parse_tilde(char *tilde, t_env_var *var)
 	return (tilde);
 }
 
-t_list	*ft_parsecmd(char *buffer, t_list **env, t_env_var *var)
+char *expand_tilde_$( char *buff, t_list **env, t_env_var *var)
 {
-	char	*buff;
-	char	*tmp;
-	t_list	*args;
+	char *tmp;
 
-	if (!(buff = malloc(ft_strlen(buffer) + 1)))
+	tmp = ft_parse_dollar(ft_strdup(buff), env);
+	tmp = ft_parse_tilde(tmp, var);
+	ft_translate(tmp, "\1\2", "$~");
+	return (tmp);
+}
+
+t_list *parse_exit(char *buff, t_list *args)
+{
+	free(buff);
+	ft_lstdel(&args);
+	return (NULL);
+}
+
+t_list *ft_parsecmd(t_cmd_holder *hold, t_list **env, t_env_var *var)
+{
+	char *buff;
+	char *tmp;
+	t_list *args;
+
+	if (!(buff = malloc(ft_strlen(hold->buff) + 1)))
 		return (NULL);
 	args = NULL;
-	buffer = ft_skip_chars(buffer, "\t ", NULL);
-	while (*buffer)
+	tmp = NULL;
+	hold->cmd = ft_skip_chars(hold->buff, "\t ", NULL);
+	while (*hold->cmd)
 	{
-		if (!(buffer = ft_parse_arg(buffer, &buff)))
-		{
-			free(buff);
-			ft_lstdel(&args);
-			return (NULL);
-		}
-		buffer = ft_skip_chars(buffer, "\t ", NULL);
-		tmp = ft_parse_dollar(ft_strdup(buff), env);
-		tmp = ft_parse_tilde(tmp, var);
-		ft_translate(tmp, "\1\2", "$~");
+		if (!(hold->cmd = ft_parse_arg(hold, &buff)))
+			return (parse_exit(buff, args));
+		hold->cmd = ft_skip_chars(hold->cmd, "\t ", NULL);
+		tmp = expand_tilde_$(buff, env,var);
 		ft_lstpushback(&args, tmp, ft_strlen(tmp) + !!tmp);
 		free(tmp);
 	}
+	printlst(args);
+	add_to_history(hold->buff, ft_strlen(hold->buff));
 	free(buff);
 	return (args);
 }
