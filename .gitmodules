@@ -1,3 +1,6 @@
 [submodule "libft"]
 	path = libft
 	url = https://github.com/zanninso/libft.git
+[submodule "readline"]
+	path = readline
+	url = https://github.com/zanninso/readline.git
