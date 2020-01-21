@@ -3,4 +3,4 @@
 	url = https://github.com/zanninso/libft.git
 [submodule "readline"]
 	path = readline
-	url = https://github.com/zanninso/readline.git
+	url = https://github.com/zanninso/ft_readline.git
