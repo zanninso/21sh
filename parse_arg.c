@@ -6,7 +6,7 @@
 /*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/21 19:20:46 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/21 20:11:07 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,10 @@ void merge_cmd(t_cmd_holder *hold, char *str)
 	len = ft_strlen(hold->buff);
 	if ((hold->buff = ft_strnjoin((char *[]){hold->buff, "\n", str}, 3)))
 		hold->cmd = hold->buff + len + 1;
-	else if (str)
-	{
+	if (str)
 		free(str);
+	if (!hold->buff)
 		hold->cmd = NULL;
-	}
 	free(tmp);
 }
 
@@ -48,7 +47,7 @@ char *sequel(char **buff, int *buff_len)
 
 char *copy_to_buff(char *arg, char *buff, int *i, const char *cmp)
 {
-	while (*arg && !ft_isinstr(*arg, cmp))
+	while (arg && *arg && !ft_isinstr(*arg, cmp))
 	{
 		if (*arg == '\\')
 			if (arg++ && !*arg)
@@ -105,7 +104,7 @@ char *parse_pipe(t_cmd_holder *hold, char **buff, int *i)
 		ft_printf("parse error near `%c'\n", *hold->cmd);
 		return (NULL);
 	}
-	while (!*hold->cmd)
+	while (hold->cmd && !*hold->cmd)
 		merge_cmd(hold, sequel(buff, i));
 	return (hold->cmd);
 }
@@ -121,7 +120,7 @@ char *parse_quotes(t_cmd_holder *hold, char **buff, int *i)
 	while (1)
 	{
 		hold->cmd = copy_to_buff(hold->cmd, *buff, i, (char[2]){c, 0});
-		if (*hold->cmd == c)
+		if (!hold->cmd || *hold->cmd == c)
 			break;
 		merge_cmd(hold, sequel(buff, i));
 	}
@@ -129,7 +128,7 @@ char *parse_quotes(t_cmd_holder *hold, char **buff, int *i)
 		ft_translate(*buff + j, "$~&;<>|", "\1\2\5\6\7\x08\x09");
 	else
 		ft_translate(*buff + j, "~&;<>|", "\2\5\6\7\x08\x09");
-	return (hold->cmd + 1);
+	return (hold->cmd + !!hold->cmd);
 }
 
 char *ft_parse_arg(t_cmd_holder *hold, char **buff)
