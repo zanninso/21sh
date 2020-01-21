@@ -6,7 +6,7 @@
 /*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/21 18:25:35 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/21 19:20:46 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ char *parse_pipe(t_cmd_holder *hold, char **buff, int *i)
 		buff[0][(*i)++] = *hold->cmd++;
 	buff[0][(*i)] = 0;
 	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
-	if (*i - j > 2 || ft_isinstr(hold->cmd, SEPARATOR))
+	if (*i - j > 2 || ft_isinstr(*hold->cmd, SEPARATOR))
 	{
 		ft_printf("parse error near `%c'\n", *hold->cmd);
 		return (NULL);
