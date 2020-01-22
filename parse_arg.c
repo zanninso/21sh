@@ -6,7 +6,7 @@
 /*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/22 01:43:07 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/22 02:10:39 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,10 +67,10 @@ char *parse_redirections(t_cmd_holder *hold, char **buff, int *i)
 		buff[0][(*i)++] = *hold->cmd++;
 	if (*i - j > 2)
 	{
-		ft_printf("parse error near `%c'\n", *hold->cmd);
+		ft_printf("parse error near `%c'\n", c);
 		return (NULL);
 	}
-	(*i - j == 1 && *hold->cmd == '&') ? buff[0][(*i)++] = '&' : 0;
+	(*i - j == 1 && *hold->cmd == '&') ? buff[0][(*i)++] = *hold->cmd++ : 0;
 	buff[0][*i] = 0;
 	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
 	if (!*hold->cmd || ft_isinstr(*hold->cmd, SEPARATOR))
@@ -138,7 +138,8 @@ char *ft_parse_arg(t_cmd_holder *hold, char **buff)
 			buff[0][index] = 0;
 			return (hold->cmd);
 		}
-		else if (ft_isinstr(*hold->cmd,"<>") && BETWEEN(index, 0, 1) && ft_isdigit(*hold->cmd))
+		else if (ft_isinstr(*hold->cmd, "<>") &&
+					(index == 0 || (index == 1 && ft_isdigit(hold->cmd[-1]))))
 			return (parse_redirections(hold, buff, &index));
 		else
 			break;
