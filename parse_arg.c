@@ -6,7 +6,7 @@
 /*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/22 02:10:39 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/22 18:03:05 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ char *parse_redirections(t_cmd_holder *hold, char **buff, int *i)
 	}
 	(*i - j == 1 && *hold->cmd == '&') ? buff[0][(*i)++] = *hold->cmd++ : 0;
 	buff[0][*i] = 0;
-	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
+	hold->cmd = ft_skip_chars(hold->cmd, " \t\n", NULL);
 	if (!*hold->cmd || ft_isinstr(*hold->cmd, SEPARATOR))
 	{
 		ft_printf("parse error near `%2s'\n", *hold->cmd ? hold->cmd : "\n");
@@ -89,14 +89,18 @@ char *parse_pipe(t_cmd_holder *hold, char **buff, int *i)
 	while (*hold->cmd == c)
 		buff[0][(*i)++] = *hold->cmd++;
 	buff[0][*i] = 0;
-	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
-	if (*i - j > 2 || ft_isinstr(*hold->cmd, SEPARATOR))
+	if (*i - j > 2)
 	{
-		ft_printf("parse error near `%c'\n", *hold->cmd);
+		ft_printf("parse error near `%c'\n", c);
 		return (NULL);
 	}
-	while (hold->cmd && !*hold->cmd)
+	while (hold->cmd && !*(hold->cmd = ft_skip_chars(hold->cmd, " \t\n", NULL)))
 		merge_cmd(hold, sequel(buff, i));
+	if (hold->cmd && ft_isinstr(*hold->cmd, SEPARATOR))
+	{
+		ft_printf("parse error near `%c'\n", *hold->cmd);
+		return(NULL);
+	}
 	return (hold->cmd);
 }
 
@@ -126,7 +130,7 @@ char *ft_parse_arg(t_cmd_holder *hold, char **buff)
 	index = 0;
 	while (hold->cmd && *hold->cmd)
 	{
-		hold->cmd = copy_to_buff(hold->cmd, *buff, &index, ";|&><' \t\"");
+		hold->cmd = copy_to_buff(hold->cmd, *buff, &index, ";|&><' \t\"\n");
 		if (*hold->cmd == '"' || *hold->cmd == '\'')
 			hold->cmd = parse_quotes(hold, buff, &index);
 		else if ((*hold->cmd == '|' || *hold->cmd == '&') && index == 0)

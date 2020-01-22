@@ -6,7 +6,7 @@
 /*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/21 06:55:35 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/21 14:52:45 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/22 17:48:29 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,12 +87,12 @@ t_list *ft_parsecmd(t_cmd_holder *hold, t_list **env, t_env_var *var)
 		return (NULL);
 	args = NULL;
 	tmp = NULL;
-	hold->cmd = ft_skip_chars(hold->buff, "\t ", NULL);
+	hold->cmd = ft_skip_chars(hold->buff, "\n\t ", NULL);
 	while (*hold->cmd)
 	{
 		if (!(hold->cmd = ft_parse_arg(hold, &buff)))
 			return (parse_exit(buff, args));
-		hold->cmd = ft_skip_chars(hold->cmd, "\t ", NULL);
+		hold->cmd = ft_skip_chars(hold->cmd, "\n\t ", NULL);
 		tmp = expand_tilde_$(buff, env,var);
 		ft_lstpushback(&args, tmp, ft_strlen(tmp) + !!tmp);
 		free(tmp);
