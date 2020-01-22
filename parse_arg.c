@@ -6,7 +6,7 @@
 /*   By: aait-ihi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/26 23:57:05 by aait-ihi          #+#    #+#             */
-/*   Updated: 2020/01/21 20:11:07 by aait-ihi         ###   ########.fr       */
+/*   Updated: 2020/01/22 01:43:07 by aait-ihi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,23 +60,18 @@ char *copy_to_buff(char *arg, char *buff, int *i, const char *cmp)
 
 char *parse_redirections(t_cmd_holder *hold, char **buff, int *i)
 {
-	int j;
-	char c;
+	const int j = *i;
+	const char c = *hold->cmd;
 
-	if (!hold->cmd || !buff || !*buff)
-		return (NULL);
-	// (*i == 0) ? (buff[0][(*i)++] = *hold->cmd) : 0;
-	j = *i;
-	c = *hold->cmd;
 	while (*hold->cmd == c)
 		buff[0][(*i)++] = *hold->cmd++;
 	if (*i - j > 2)
 	{
-		ft_printf("parse error near `%c'\n", c);
+		ft_printf("parse error near `%c'\n", *hold->cmd);
 		return (NULL);
 	}
 	(*i - j == 1 && *hold->cmd == '&') ? buff[0][(*i)++] = '&' : 0;
-	buff[0][(*i)] = 0;
+	buff[0][*i] = 0;
 	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
 	if (!*hold->cmd || ft_isinstr(*hold->cmd, SEPARATOR))
 	{
@@ -88,16 +83,12 @@ char *parse_redirections(t_cmd_holder *hold, char **buff, int *i)
 
 char *parse_pipe(t_cmd_holder *hold, char **buff, int *i)
 {
-	int j;
-	int c;
+	const int j = *i;
+	const char c = *hold->cmd;
 
-	j = *i;
-	c = *hold->cmd;
-	if (!hold->cmd || !buff || !*buff)
-		return (NULL);
 	while (*hold->cmd == c)
 		buff[0][(*i)++] = *hold->cmd++;
-	buff[0][(*i)] = 0;
+	buff[0][*i] = 0;
 	hold->cmd = ft_skip_chars(hold->cmd, " \t", NULL);
 	if (*i - j > 2 || ft_isinstr(*hold->cmd, SEPARATOR))
 	{
@@ -111,12 +102,9 @@ char *parse_pipe(t_cmd_holder *hold, char **buff, int *i)
 
 char *parse_quotes(t_cmd_holder *hold, char **buff, int *i)
 {
-	char c;
+	char c = *hold->cmd++;;
 	const int j = *i;
 
-	if (!hold->cmd || !buff || !*buff)
-		return (NULL);
-	c = *hold->cmd++;
 	while (1)
 	{
 		hold->cmd = copy_to_buff(hold->cmd, *buff, i, (char[2]){c, 0});
@@ -150,7 +138,7 @@ char *ft_parse_arg(t_cmd_holder *hold, char **buff)
 			buff[0][index] = 0;
 			return (hold->cmd);
 		}
-		else if ((*hold->cmd == '<' || *hold->cmd == '>') && BETWEEN(index, 0, 1))
+		else if (ft_isinstr(*hold->cmd,"<>") && BETWEEN(index, 0, 1) && ft_isdigit(*hold->cmd))
 			return (parse_redirections(hold, buff, &index));
 		else
 			break;
